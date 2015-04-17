@@ -20,6 +20,10 @@ my %newman_options =
   (I => {prob => .5, amount => 4},
    D => {prob => .7, amount => 6});
 
+# Waits are in milliseconds.
+my $fixed_wait = 1_000;
+my $median_rand_wait = 3_000;
+
 sub block_appearance ($)
    {$_[0] % 2 ? 'newman-block-odd' : 'newman-block-even';}
 
@@ -38,6 +42,13 @@ my $o; # Will be our Tversky object.
 sub p ($)
    {"<p>$_[0]</p>"}
 
+my $mean_rand_wait = $median_rand_wait / log(2);
+
+sub rand_exp
+# Get an exponentially distributed random variate.
+   {my $mean = shift;
+    $mean * -log(rand());}
+
 # ------------------------------------------------
 # Tasks
 # ------------------------------------------------
@@ -47,7 +58,7 @@ sub newman_trial
 
     my $k = sprintf 'b%02d.t%d', $block, $trial;
     my $wait = $o->save_once("newman.wait.$k", sub
-       {3000});
+       {$fixed_wait + int rand_exp $mean_rand_wait});
     $o->multiple_choice_page("newman.choice.$k",
         sprintf('<div class="newman-div %s">%s</div>',
             $appearance_class,
