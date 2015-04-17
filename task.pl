@@ -21,7 +21,7 @@ my %newman_options =
    D => {prob => .7, amount => 6});
 
 sub block_appearance ($)
-   {$_[0] % 2 ? 'odd-newman-block' : 'even-newman-block';}
+   {$_[0] % 2 ? 'newman-block-odd' : 'newman-block-even';}
 
 sub describe_newman_option ($)
    {my $k = shift;
@@ -43,13 +43,17 @@ sub p ($)
 # ------------------------------------------------
 
 sub newman_trial
-   {my ($block, $trial, $appearance, $must_choose) = @_;
+   {my ($block, $trial, $appearance_class, $must_choose) = @_;
 
     my $k = sprintf 'b%02d.t%d', $block, $trial;
     my $wait = $o->save_once("newman.wait.$k", sub
        {3000});
     $o->multiple_choice_page("newman.choice.$k",
-        "<p id='newman-header' class='newman-wait-${wait}ms'>Choose A or wait for B to become available.</p>",
+        sprintf('<div class="newman-div %s">%s</div>',
+            $appearance_class,
+            sprintf '<p id="newman-header" class="newman-wait-%dms">%s</p>',
+                $wait,
+                'Choose A or wait for B to become available.'),
         PROC => sub 
            {# Accept I or D, and allow for the response time
             # (in ms) added by the JavaScript.
@@ -142,6 +146,15 @@ __DATA__
     div.multiple_choice_box > div.row > .body
        {text-align: left;
         vertical-align: middle;}
+
+    .newman-div
+       {padding: 2em;
+        border-width: 3mm;
+        margin-bottom: 2em;}
+    .newman-block-even
+       {border-style: solid;}
+    .newman-block-odd
+       {border-style: dashed;}
 
     #newman-desc-D
        {display: none;}
