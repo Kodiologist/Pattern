@@ -11,17 +11,24 @@ if (!header)
 
 var button = $('multiple_choice.I');
 
-// After the wait timeout, make B available.
-var wait_duration = parseInt(
-    /^newman-wait-([0-9]+)ms/.exec(header.className)[1],
-    10);
-var after_wait_f = function()
-   {button.setAttribute('value', 'D');
-    button.textContent = 'B';
-    $('newman-desc-I').style.display = 'none';
-    $('newman-desc-D').style.display = 'inline';
-    header.textContent = 'B is now available.';};
-window.setTimeout(after_wait_f, wait_duration);
+var cls_matches = /^newman-wait-([0-9]+)ms newman-must-choose-(\w+)/.exec(header.className);
+var wait_duration = parseInt(cls_matches[1], 10);
+var must_choose = cls_matches[2];
+
+// If must_choose is D, disable I.
+if (must_choose === 'D')
+    button.disabled = true;
+
+// If must_choose is not I, make D available after the wait timeout.
+if (must_choose !== 'I')
+   {var after_wait_f = function()
+       {button.setAttribute('value', 'D');
+        button.textContent = 'B';
+        button.disabled = false;
+        $('newman-desc-I').style.display = 'none';
+        $('newman-desc-D').style.display = 'inline';
+        header.textContent = 'B is now available.';};
+    window.setTimeout(after_wait_f, wait_duration);}
 
 // When the subject submits the form, include the response time.
 var start_time = (new Date()).getTime();

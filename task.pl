@@ -49,47 +49,101 @@ sub rand_exp
    {my $mean = shift;
     $mean * -log(rand());}
 
+sub in
+ {my $item = shift;
+  $item eq $_ and return 1 foreach @_;
+  return 0;}
+
 # ------------------------------------------------
 # Tasks
 # ------------------------------------------------
 
+sub mk_newman_key
+   {my ($kind, $block, $trial) = @_;
+    sprintf 'newman.%s.b%02d.t%d', $kind, $block, $trial;}
+
+sub get_newman_choice
+# Returns 'I' or 'D'.
+   {my ($block, $trial) = @_;
+    $o->getu(mk_newman_key 'choice', $block, $trial) =~ /\A([ID])/
+        or die 'No ID match';
+    $1;}
+
+sub k ($);
 sub newman_trial
    {my ($block, $trial, $appearance_class, $must_choose) = @_;
+    in($must_choose, qw(I D either always_either))
+        or die "Unknown \$must_choose: $must_choose";
 
-    my $k = sprintf 'b%02d.t%d', $block, $trial;
-    my $wait = $o->save_once("newman.wait.$k", sub
+    local *k = sub {mk_newman_key $_[0], $block, $trial};
+
+    my $wait = $o->save_once(k 'wait', sub
        {$fixed_wait + int rand_exp $mean_rand_wait});
-    $o->multiple_choice_page("newman.choice.$k",
+    $o->multiple_choice_page(k 'choice',
+
         sprintf('<div class="newman-div %s">%s</div>',
             $appearance_class,
-            sprintf '<p id="newman-header" class="newman-wait-%dms">%s</p>',
+            sprintf '<p id="newman-header" class="newman-wait-%dms newman-must-choose-%s">%s</p>%s',
                 $wait,
-                'Choose A or wait for B to become available.'),
+                $must_choose,
+                'Choose A or wait for B to become available.',
+                !defined($must_choose) ? '' : sprintf '<p>On this trial, you %s.</p>',
+                    $must_choose eq 'I'
+                  ? 'must choose A'
+                  : $must_choose eq 'D'
+                  ? 'must choose B'
+                  : 'may choose either of A or B'),
+
         PROC => sub 
-           {# Accept I or D, and allow for the response time
-            # (in ms) added by the JavaScript.
-            /\A[ID] \d+\z/ ? $_ : undef},
+           {# Accept I or D depending on $must_choose, and allow
+            # for the response time (in ms) added by the
+            # JavaScript.
+            my $re =
+                $must_choose eq 'I' ? 'I'
+              : $must_choose eq 'D' ? 'D'
+              :                       '[ID]';
+            /\A$re \d+\z/ ? $_ : undef},
+
         ['I', 'A'] => sprintf '<span id="newman-desc-I">%s</span><span id="newman-desc-D">%s</span>',
             describe_newman_option 'I',
             describe_newman_option 'D');
-    $o->getu("newman.choice.$k") =~ /\A([ID])/ or die 'No ID match';
-    my $choice = $1;
-    my $won = $o->save_once("newman.won.$k", sub
+
+    my $choice = get_newman_choice $block, $trial;
+    my $won = $o->save_once(k 'won', sub
        {rand() <= $newman_options{$choice}{prob}
           ? 1
           : ''});
-    $o->okay_page("newman.outcome_page.$k", cat
+    $o->okay_page(k 'outcome_page', cat
         $won ? p 'WIN!' : '',
         p sprintf '%d cents', $won
           ? $newman_options{$choice}{amount}
           : 0);}
 
 sub newman_task
-   {#$o->okay_page('newman_task_instructions', p 'something something');
+   {my $condition = shift;
+
+    #$o->okay_page('newman_task_instructions', p 'something something');
 
     foreach my $block (1 .. NEWMAN_BLOCKS)
-      {foreach my $trial (1 .. TRIALS_PER_NEWMAN_BLOCK)
-          {newman_trial $block, $trial, block_appearance($block), undef;}}}
+       {my $even_block = $block % 2 == 0;
+        foreach my $trial (1 .. TRIALS_PER_NEWMAN_BLOCK)
+           {newman_trial $block, $trial, block_appearance($block),
+              # What choice is the subject forced to make, if any?
+                $condition eq 'control'
+              ? 'always_either'
+              : $condition eq 'within_pattern'
+              ? $trial == 1
+                  ? 'either'
+                  : get_newman_choice($block, 1)
+              : $condition eq 'across_pattern'
+              ? $even_block
+                  ? get_newman_choice($block - 1, $trial)
+                  : 'either'
+              : $condition eq 'across_force_d'
+              ? $even_block
+                  ? 'D'
+                  : 'either'
+              : die "Unknown \$condition: $condition";}}}
 
 # ------------------------------------------------
 # Mainline code
@@ -110,7 +164,10 @@ $o = new Tversky
 
 $o->run(sub
 
-   {newman_task;
+   {#newman_task 'control';
+    #newman_task 'across_force_d';
+    #newman_task 'within_pattern';
+    newman_task 'across_pattern';
 
     $o->buttons_page('gender',
         p 'Are you male or female?',
