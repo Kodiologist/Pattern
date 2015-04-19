@@ -2,7 +2,7 @@
 
 window.onload = function() {
 
-var $ = function(x) document.getElementById(x);
+var $ = function(x) {return document.getElementById(x)};
 
 var header = $('newman-header');
 if (!header)
