@@ -7,6 +7,7 @@ use warnings;
 use strict;
 use Carp::Always;
 
+use List::Util 'max';
 use Tversky 'cat';
 
 # ------------------------------------------------
@@ -21,8 +22,8 @@ my %newman_options =
    D => {prob => .7, amount => 6});
 
 # Waits are in milliseconds.
-my $fixed_wait = 1_000;
-my $median_rand_wait = 3_000;
+my $fixed_dwait = 1_000;
+my $median_rand_dwait = 3_000;
 
 sub block_appearance ($)
    {$_[0] % 2 ? 'newman-block-odd' : 'newman-block-even';}
@@ -42,7 +43,7 @@ my $o; # Will be our Tversky object.
 sub p ($)
    {"<p>$_[0]</p>"}
 
-my $mean_rand_wait = $median_rand_wait / log(2);
+my $mean_rand_dwait = $median_rand_dwait / log(2);
 
 sub rand_exp
 # Get an exponentially distributed random variate.
@@ -69,7 +70,15 @@ sub get_newman_choice
         or die 'No ID match';
     $1;}
 
+sub get_newman_rt
+# Returns the response time in ms.
+   {my ($block, $trial) = @_;
+    $o->getu(mk_newman_key 'choice', $block, $trial) =~ /\A[ID] (\d+)/
+        or die 'No RT match';
+    $1;}
+
 sub k ($);
+sub k_prev($);
 sub newman_trial
    {my ($block, $trial, $appearance_class, $must_choose) = @_;
     in($must_choose, qw(I D either always_either))
@@ -77,14 +86,29 @@ sub newman_trial
 
     local *k = sub {mk_newman_key $_[0], $block, $trial};
 
-    my $wait = $o->save_once(k 'wait', sub
-       {$fixed_wait + int rand_exp $mean_rand_wait});
+    # If the subject chose I, enforce an inter-trial interval
+    # $iti of the same duration they would've waited for D.
+    my $iti = $block == 1 && $trial == 1 ? 0 : do
+       {my $block_prev = $block - ($trial == 1);
+        my $trial_prev = $trial == 1 ? TRIALS_PER_NEWMAN_BLOCK : $trial - 1;
+        if (get_newman_choice($block_prev, $trial_prev) eq 'I')
+          {my $prev_dwait = $o->getu(mk_newman_key 'dwait', $block_prev, $trial_prev);
+           my $prev_rt = get_newman_rt $block_prev, $trial_prev;
+           max 0, $prev_dwait - $prev_rt}
+        else
+          {0}};
+
+    my $dwait = $o->save_once(k 'dwait', sub
+       {$fixed_dwait + int rand_exp $mean_rand_dwait});
+
     $o->multiple_choice_page(k 'choice',
 
-        sprintf('<div class="newman-div %s">%s</div>',
+        sprintf('<p id="newman-iti">%s</p><div id="newman-div" class="%s">%s</div>',
+            'Wait for the next trial to begin.',
             $appearance_class,
-            sprintf '<p id="newman-header" class="newman-wait-%dms newman-must-choose-%s">%s</p>%s',
-                $wait,
+            sprintf '<p id="newman-header" class="newman-iti-%dms newman-dwait-%dms newman-must-choose-%s">%s</p>%s',
+                $iti,
+                $dwait,
                 $must_choose,
                 'Choose A or wait for B to become available.',
                 !defined($must_choose) ? '' : sprintf '<p>On this trial, you %s.</p>',
@@ -94,15 +118,17 @@ sub newman_trial
                   ? 'must choose B'
                   : 'may choose either of A or B'),
 
-        PROC => sub 
-           {# Accept I or D depending on $must_choose, and allow
-            # for the response time (in ms) added by the
-            # JavaScript.
-            my $re =
-                $must_choose eq 'I' ? 'I'
-              : $must_choose eq 'D' ? 'D'
-              :                       '[ID]';
-            /\A$re \d+\z/ ? $_ : undef},
+        PAGE => {
+            fields_wrapper => '<div id="newman-fields">%s</div>',
+            proc => sub
+               {# Accept I or D depending on $must_choose, and allow
+                # for the response time (in ms) added by the
+                # JavaScript.
+                my $re =
+                    $must_choose eq 'I' ? 'I'
+                  : $must_choose eq 'D' ? 'D'
+                  :                       '[ID]';
+                /\A$re \d+\z/ ? $_ : undef}},
 
         ['I', 'A'] => sprintf '<span id="newman-desc-I">%s</span><span id="newman-desc-D">%s</span>',
             describe_newman_option 'I',
@@ -215,7 +241,11 @@ __DATA__
        {text-align: left;
         vertical-align: middle;}
 
-    .newman-div
+    #newman-div, #newman-fields
+      /* These are revealed by JavaScript. */
+       {display: none;}
+
+    #newman-div
        {padding: 2em;
         border-width: 3mm;
         margin-bottom: 2em;}
