@@ -28,12 +28,6 @@ my $median_rand_dwait = 5_000;
 sub block_appearance ($)
    {$_[0] % 2 ? 'newman-block-odd' : 'newman-block-even';}
 
-sub describe_newman_option ($)
-   {my $k = shift;
-    sprintf '<b>%d%%</b> chance of <b>%d</b> cents',
-        int(100 * $newman_options{$k}{prob}),
-        $newman_options{$k}{amount};}
-
 # ------------------------------------------------
 # Declarations
 # ------------------------------------------------
@@ -76,6 +70,18 @@ sub get_newman_rt
     $o->getu(mk_newman_key 'choice', $block, $trial) =~ /\A[ID] (\d+)/
         or die 'No RT match';
     $1;}
+
+sub describe_newman_option ($)
+   {my $k = shift;
+    my $prob = $newman_options{$k}{prob};
+    my $amount = $newman_options{$k}{amount};
+    my $desc = sprintf "<b>%d%%</b> chance of <b>%d</b> cents",
+        int(100 * $prob), $amount;
+    my $bar = sprintf '<span class="%s"><span class="%s" style="height: %d%%"></span></span>',
+        'newman-probability-bar',
+        'bad-outcome',
+        int(100 * (1 - $prob));
+    cat $desc, $bar, "$amount cents";}
 
 sub k ($);
 sub k_prev($);
@@ -267,9 +273,25 @@ __DATA__
         display: table-cell;}
     #newman-fields .row > div
        {display: block;}
+    #newman-fields .button
+       {padding: 0;}
 
     .newman-desc-forbidden
        {text-decoration: line-through;}
+
+    .newman-probability-bar
+       {margin-top: 2em;
+        display: block;
+        width: 3em;
+        height: 6em;
+        margin-left: auto;
+        margin-right: auto;
+        background-color: #00cc00;}
+    .newman-probability-bar .bad-outcome
+       {display: block;
+        width: 100%;
+        background-color: #aa0000;
+        border-bottom: medium solid black;}
 
     input.text_entry, textarea.text_entry
        {border: thin solid black;
