@@ -14,7 +14,7 @@ use Tversky 'cat';
 # Parameters
 # ------------------------------------------------
 
-use constant NEWMAN_BLOCKS => 4;
+use constant NEWMAN_BLOCKS => 14;
 use constant TRIALS_PER_NEWMAN_BLOCK => 3;
 
 my %newman_options =
@@ -22,8 +22,8 @@ my %newman_options =
    D => {prob => .7, amount => 6});
 
 # Waits are in milliseconds.
-my $fixed_dwait = 1_000;
-my $median_rand_dwait = 3_000;
+my $fixed_dwait = 5_000;
+my $median_rand_dwait = 5_000;
 
 sub block_appearance ($)
    {$_[0] % 2 ? 'newman-block-odd' : 'newman-block-even';}
@@ -248,11 +248,14 @@ __DATA__
     #newman-div
        {padding: 2em;
         border-width: 3mm;
-        margin-bottom: 2em;}
+        margin-bottom: 2em;
+        color: black;}
     .newman-block-even
-       {border-style: solid;}
+       {border-style: solid;
+        background-color: #ffa;}
     .newman-block-odd
-       {border-style: dashed;}
+       {border-style: dashed;
+        background-color: #aff;}
 
     #newman-desc-D
        {display: none;}
