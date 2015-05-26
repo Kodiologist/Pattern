@@ -17,6 +17,10 @@ var iti = parseInt(cls_matches[1], 10);
 var dwait = parseInt(cls_matches[2], 10);
 var must_choose = cls_matches[3];
 
+// D starts out unavailable.
+button_d.disabled = true;
+button_d.textContent = '[Not available yet]';
+
 // If must_choose is D or I, forbid the other.
 if (must_choose === 'I')
    {button_d.disabled = true;
@@ -33,7 +37,9 @@ var after_iti_f = function()
 
     // Make D available after the dwait timeout.
     var after_dwait_f = function()
-       {button_d.style.display = 'block';
+       {if (must_choose !== 'I')
+            button_d.disabled = false;
+        button_d.textContent = 'B';
         header.textContent = 'B is now available.';};
     window.setTimeout(after_dwait_f, dwait);
 

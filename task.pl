@@ -258,9 +258,15 @@ __DATA__
        {border-style: dashed;
         background-color: #aff;}
 
-    #multiple_choice\.D
-     /* The D button is revealed by JavaScript. */
-       {display: none;}
+    #newman-fields .multiple_choice_box
+       {width: 100%;
+        margin-left: 0;
+        margin-right: 0;}
+    #newman-fields .row
+       {width: 50%;
+        display: table-cell;}
+    #newman-fields .row > div
+       {display: block;}
 
     .newman-desc-forbidden
        {text-decoration: line-through;}
