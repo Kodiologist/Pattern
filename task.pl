@@ -130,9 +130,10 @@ sub newman_trial
                   :                       '[ID]';
                 /\A$re \d+\z/ ? $_ : undef}},
 
-        ['I', 'A'] => sprintf '<span id="newman-desc-I">%s</span><span id="newman-desc-D">%s</span>',
-            describe_newman_option 'I',
-            describe_newman_option 'D');
+        ['I', 'A'] => sprintf('<span id="newman-desc-I">%s</span>',
+            describe_newman_option 'I'),
+        ['D', 'B'] => sprintf('<span id="newman-desc-D">%s</span>',
+            describe_newman_option 'D'));
 
     my $choice = get_newman_choice $block, $trial;
     my $won = $o->save_once(k 'won', sub
@@ -257,8 +258,12 @@ __DATA__
        {border-style: dashed;
         background-color: #aff;}
 
-    #newman-desc-D
+    #multiple_choice\.D
+     /* The D button is revealed by JavaScript. */
        {display: none;}
+
+    .newman-desc-forbidden
+       {text-decoration: line-through;}
 
     input.text_entry, textarea.text_entry
        {border: thin solid black;
