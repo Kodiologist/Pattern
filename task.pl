@@ -84,30 +84,33 @@ sub describe_newman_option ($)
     cat $desc, $bar, "$amount cents";}
 
 sub k ($);
+sub newman_div;
 sub newman_trial
    {my ($block, $trial, $appearance_class, $must_choose) = @_;
     in($must_choose, qw(I D either always_either))
         or die "Unknown \$must_choose: $must_choose";
 
     local *k = sub {mk_newman_key $_[0], $block, $trial};
+    local *newman_div = sub {sprintf
+        '<div id="newman-div" class="%s">%s</div>',
+        $appearance_class,
+        $_[0]};
 
     my $dwait = $o->save_once(k 'dwait', sub
        {$fixed_dwait + int rand_exp $mean_rand_dwait});
 
     $o->multiple_choice_page(k 'choice',
 
-        sprintf('<div id="newman-div" class="%s">%s</div>',
-            $appearance_class,
-            sprintf '<p id="newman-header" class="newman-dwait-%dms newman-must-choose-%s">%s</p>%s',
-                $dwait,
-                $must_choose,
-                'Choose A or wait for B to become available.',
-                !defined($must_choose) ? '' : sprintf '<p>On this trial, you %s.</p>',
-                    $must_choose eq 'I'
-                  ? 'must choose A'
-                  : $must_choose eq 'D'
-                  ? 'must choose B'
-                  : 'may choose either of A or B'),
+        newman_div(sprintf '<p id="newman-header" class="newman-dwait-%dms newman-must-choose-%s">%s</p>%s',
+            $dwait,
+            $must_choose,
+            'Choose A or wait for B to become available.',
+            !defined($must_choose) ? '' : sprintf '<p>On this trial, you %s.</p>',
+                $must_choose eq 'I'
+              ? 'must choose A'
+              : $must_choose eq 'D'
+              ? 'must choose B'
+              : 'may choose either of A or B'),
 
         PAGE => {
             fields_wrapper => '<div id="newman-fields">%s</div>',
@@ -135,9 +138,9 @@ sub newman_trial
     # $iti of the same duration they would've waited for D.
     my $iti = max 0, $dwait - get_newman_rt $block, $trial;
     $o->okay_page(k 'outcome_page',
-        ($won ? p 'WIN!' : '') . p(sprintf '%d cents', $won
+        newman_div(($won ? p 'WIN!' : '') . p(sprintf '%d cents', $won
           ? $newman_options{$choice}{amount}
-          : 0),
+          : 0)),
         fields_wrapper => "<div id='newman-outcome' class='newman-iti-${iti}ms'>%s</div>");}
 
 sub newman_task
