@@ -31,8 +31,7 @@ if (header)
     var after_dwait_f = function()
        {if (must_choose !== 'I')
             button_d.disabled = false;
-        button_d.textContent = 'B';
-        header.textContent = 'B is now available.';};
+        button_d.textContent = 'B';};
     window.setTimeout(after_dwait_f, dwait);
 
     // When the subject submits the form, include the response time.

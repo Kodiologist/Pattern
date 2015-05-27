@@ -103,11 +103,10 @@ sub newman_trial
 
     $o->multiple_choice_page(k 'choice',
 
-        newman_div(sprintf '<p id="newman-header" class="newman-dwait-%dms newman-must-choose-%s">%s</p>%s',
+        newman_div(sprintf '<p id="newman-header" class="newman-dwait-%dms newman-must-choose-%s">%s</p>',
             $dwait,
             $must_choose,
-            'Choose A or wait for B to become available.',
-            !defined($must_choose) ? '' : sprintf '<p>On this trial, you %s.</p>',
+            sprintf 'On this trial, you %s.',
                 $must_choose eq 'I'
               ? 'must choose A'
               : $must_choose eq 'D'
