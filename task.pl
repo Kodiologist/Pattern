@@ -84,7 +84,6 @@ sub describe_newman_option ($)
     cat $desc, $bar, "$amount cents";}
 
 sub k ($);
-sub k_prev($);
 sub newman_trial
    {my ($block, $trial, $appearance_class, $must_choose) = @_;
     in($must_choose, qw(I D either always_either))
@@ -92,28 +91,14 @@ sub newman_trial
 
     local *k = sub {mk_newman_key $_[0], $block, $trial};
 
-    # If the subject chose I, enforce an inter-trial interval
-    # $iti of the same duration they would've waited for D.
-    my $iti = $block == 1 && $trial == 1 ? 0 : do
-       {my $block_prev = $block - ($trial == 1);
-        my $trial_prev = $trial == 1 ? TRIALS_PER_NEWMAN_BLOCK : $trial - 1;
-        if (get_newman_choice($block_prev, $trial_prev) eq 'I')
-          {my $prev_dwait = $o->getu(mk_newman_key 'dwait', $block_prev, $trial_prev);
-           my $prev_rt = get_newman_rt $block_prev, $trial_prev;
-           max 0, $prev_dwait - $prev_rt}
-        else
-          {0}};
-
     my $dwait = $o->save_once(k 'dwait', sub
        {$fixed_dwait + int rand_exp $mean_rand_dwait});
 
     $o->multiple_choice_page(k 'choice',
 
-        sprintf('<p id="newman-iti">%s</p><div id="newman-div" class="%s">%s</div>',
-            'Wait for the next trial to begin.',
+        sprintf('<div id="newman-div" class="%s">%s</div>',
             $appearance_class,
-            sprintf '<p id="newman-header" class="newman-iti-%dms newman-dwait-%dms newman-must-choose-%s">%s</p>%s',
-                $iti,
+            sprintf '<p id="newman-header" class="newman-dwait-%dms newman-must-choose-%s">%s</p>%s',
                 $dwait,
                 $must_choose,
                 'Choose A or wait for B to become available.',
@@ -146,11 +131,14 @@ sub newman_trial
        {rand() <= $newman_options{$choice}{prob}
           ? 1
           : ''});
-    $o->okay_page(k 'outcome_page', cat
-        $won ? p 'WIN!' : '',
-        p sprintf '%d cents', $won
+    # If the subject chose I, enforce an inter-trial interval
+    # $iti of the same duration they would've waited for D.
+    my $iti = max 0, $dwait - get_newman_rt $block, $trial;
+    $o->okay_page(k 'outcome_page',
+        ($won ? p 'WIN!' : '') . p(sprintf '%d cents', $won
           ? $newman_options{$choice}{amount}
-          : 0);}
+          : 0),
+        fields_wrapper => "<div id='newman-outcome' class='newman-iti-${iti}ms'>%s</div>");}
 
 sub newman_task
    {my $condition = shift;
@@ -247,10 +235,6 @@ __DATA__
     div.multiple_choice_box > div.row > .body
        {text-align: left;
         vertical-align: middle;}
-
-    #newman-div, #newman-fields
-      /* These are revealed by JavaScript. */
-       {display: none;}
 
     #newman-div
        {padding: 2em;
