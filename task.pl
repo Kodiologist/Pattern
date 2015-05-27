@@ -55,7 +55,9 @@ sub in
 
 sub mk_newman_key
    {my ($kind, $block, $trial) = @_;
-    sprintf 'newman.%s.b%02d.t%d', $kind, $block, $trial;}
+    defined $trial
+      ? sprintf 'newman.%s.b%02d.t%d', $kind, $block, $trial
+      : sprintf 'newman.%s.b%02d', $kind, $block}
 
 sub get_newman_choice
 # Returns 'I' or 'D'.
@@ -147,9 +149,25 @@ sub newman_task
    {my $condition = shift;
 
     #$o->okay_page('newman_task_instructions', p 'something something');
+    my $a_or_b = 'you may choose either of A or B';
 
     foreach my $block (1 .. NEWMAN_BLOCKS)
        {my $even_block = $block % 2 == 0;
+        $o->okay_page(mk_newman_key('instructions', $block),
+            p sprintf 'In the next block of 3 trials, %s.',
+                $condition eq 'control'
+              ? $a_or_b
+              : $condition eq 'within_pattern'
+              ? "$a_or_b on trial 1, but you'll have to repeat that choice on trial 2 and trial 3"
+              : $condition eq 'across_pattern'
+              ? $even_block
+                ? q[you'll have to repeat the choices you made in the previous block]
+                : "$a_or_b. In the block after that, you'll have to repeat these choices"
+              : $condition eq 'across_force_d'
+              ? $even_block
+                ? q[you'll have to choose B]
+                : $a_or_b
+              : die "Unknown \$condition: $condition");
         foreach my $trial (1 .. TRIALS_PER_NEWMAN_BLOCK)
            {newman_trial $block, $trial, block_appearance($block),
               # What choice is the subject forced to make, if any?
