@@ -14,8 +14,10 @@ use Tversky 'cat';
 # Parameters
 # ------------------------------------------------
 
-use constant NEWMAN_BLOCKS => 14;
-use constant TRIALS_PER_NEWMAN_BLOCK => 3;
+my $newman_blocks = 14;
+my $trials_per_newman_block = 3;
+  # The instructions implicitly assume that
+  # $trials_per_newman_block is 3.
 
 my %newman_options =
   (I => {prob => .5, amount => 4},
@@ -25,9 +27,6 @@ my %newman_options =
 my $fixed_dwait = 5_000;
 my $median_rand_dwait = 5_000;
 
-sub block_appearance ($)
-   {$_[0] % 2 ? 'newman-block-odd' : 'newman-block-even';}
-
 # ------------------------------------------------
 # Declarations
 # ------------------------------------------------
@@ -36,6 +35,8 @@ my $o; # Will be our Tversky object.
 
 sub p ($)
    {"<p>$_[0]</p>"}
+sub pl ($)
+   {"<p class='long'>$_[0]</p>"}
 
 my $mean_rand_dwait = $median_rand_dwait / log(2);
 
@@ -56,8 +57,8 @@ sub in
 sub mk_newman_key
    {my ($kind, $block, $trial) = @_;
     defined $trial
-      ? sprintf 'newman.%s.b%02d.t%d', $kind, $block, $trial
-      : sprintf 'newman.%s.b%02d', $kind, $block}
+      ? sprintf 'newman.task.%s.b%02d.t%d', $kind, $block, $trial
+      : sprintf 'newman.task.%s.b%02d', $kind, $block}
 
 sub get_newman_choice
 # Returns 'I' or 'D'.
@@ -94,7 +95,7 @@ sub newman_trial
 
     local *k = sub {mk_newman_key $_[0], $block, $trial};
     local *newman_div = sub {sprintf
-        '<div id="newman-div" class="%s">%s</div>',
+        '<div class="newman-div %s">%s</div>',
         $appearance_class,
         $_[0]};
 
@@ -144,16 +145,91 @@ sub newman_trial
           : 0)),
         fields_wrapper => "<div id='newman-outcome' class='newman-iti-${iti}ms'>%s</div>");}
 
+my $newman_example = sprintf(
+    '<div id="newman-fields"><div class="multiple_choice_box">%s%s</div></div>',
+    sprintf('<div class="row"><p>A</p>%s</div>', describe_newman_option 'I'),
+    sprintf('<div class="row"><p>B</p>%s</div>', describe_newman_option 'D'));
+
+sub newman_task_instructions
+   {my $condition = shift;
+
+    # General instructions for the Newman task.
+    $o->okay_page('newman.warnings', cat
+        pl 'Some quick notes before we begin:',
+        sprintf '<ul>%s</ul>', cat map {"<li>$_</li>"}
+            q{Please give the experiment your undivided attention. You'll have enough time to complete the HIT if you don't multitask or walk away mid-experiment.},
+            q{This experiment uses timers to make you wait for certain things. Don't use your browser's back button or refresh button on a page with a timer, or the timer may restart (in which case it will have the same length as before).});
+    $o->okay_page('newman.general_instructions', cat
+        pl q{In this HIT, you'll complete a number of trials which will allow you to choose between two gambles, A or B. Money you win from the gambles will be given to you after the HIT as a bonus. You can't lose money from gambles. Right after you choose each gamble, I'll tell you whether or not you won the gamble.},
+        pl q{Here's what the gambles look like:},
+        $newman_example,
+        pl q{The colored bars are just graphical representations of the chance of winning.},
+        pl q{Notice that B has both a higher chance of paying out and a bigger payout. However, B isn't immediately available at the beginning of each trial. It will show as "[Not available yet]". You'll have to wait a random, unpredicatable amount of time (sometimes short, sometimes long) for B to become available.},
+        pl q{Choosing A will allow you to receive an outcome (either winning or not winning) without waiting, because A is available from the start of each trial. But choosing A won't let you complete the HIT any faster, because the time you <strong>would have</strong> waited for B, had you waited for it, will be added to the time you have to wait to get to the next trial (or to the end of the HIT). Any time you spent waiting before choosing A (although you don't <strong>need</strong> to wait before choosing A, as you do for B) will be credited towards reducing this wait.});
+
+    # The quiz
+    foreach (
+            {k => 'better_amount',
+                body => cat(
+                    p q{Let's test your understanding.},
+                    p 'Which option has the bigger payout?'),
+                choices => ['A', 'B', 'They have the same payout'],
+                correct => 'B'},
+            {k => 'better_prob',
+                body => p q{Compared to B, A's chance of paying out is},
+                choices => ['lower', 'higher', 'the same'],
+                correct => 'lower'},
+            {k => 'immediate',
+                body => p q{Which option can you choose as soon as a trial starts?},
+                choices => ['A', 'B', 'Either A or B'],
+                correct => 'A'},
+            {k => 'faster_completion',
+                body => p q{Which option will allow you to complete the HIT faster?},
+                choices => ['A', 'B', q{Neither; it makes no difference}],
+                correct => q{Neither; it makes no difference}})
+       {my %h = %$_;
+        $o->buttons_page("newman.quiz.question.$h{k}",
+            $newman_example . $h{body},
+            @{$h{choices}});
+        my $response = $o->getu("newman.quiz.question.$h{k}");
+        $o->okay_page("newman.quiz.feedback.$h{k}", p(
+            $response eq $h{correct}
+              ? 'Correct.'
+              : "Nope, the correct answer was: <strong>$h{correct}</strong>."));}
+
+    # Condition-specific instructions.
+    $o->okay_page('newman.block_types', cat
+       pl 'Okay, one more thing before we begin.',
+       pl qq{You'll complete trials in blocks of $trials_per_newman_block.},
+       sprintf('<div class="newman-div %s">%s</div>',
+           'newman-block-odd',
+           q{In <strong>odd</strong>-numbered blocks (the 1st, 3rd, 5th, and so on), you'll see this background.}),
+       sprintf('<div class="newman-div %s">%s</div>',
+           'newman-block-even',
+           q{In <strong>even</strong>-numbered blocks (the 2nd, 4th, 6th, and so on), you'll see this background.}),
+       pl($condition eq 'control'
+          ? q{The task works the same whether you're in an odd block or an even block.}
+          : $condition eq 'within_pattern'
+          ? q{Within each block, whether even or odd, you can choose either A or B on trial 1, but the task will force you to repeat that choice on trial 2 and trial 3.}
+          : $condition eq 'across_pattern'
+          ? q{In <strong>odd</strong> blocks, you can choose either A or B. In <strong>even</strong> blocks, the task will force you to repeat the series of choices you made in the previous block. So if in the 1st block you chose A, then B, then A, the task will force you in the 2nd block to choose A, then B, then A.}
+          : $condition eq 'across_force_d'
+          ? q{In <strong>odd</strong> blocks, you can choose either A or B. In <strong>even</strong> blocks, the task will force you choose B on every trial.}
+          : die "Unknown \$condition: $condition"),
+       $condition eq 'control' ? '' :
+          pl q{You'll see a quick reminder of the rules before each block.});}
+
 sub newman_task
    {my $condition = shift;
 
-    #$o->okay_page('newman_task_instructions', p 'something something');
+    newman_task_instructions $condition;
+
     my $a_or_b = 'you may choose either A or B';
 
-    foreach my $block (1 .. NEWMAN_BLOCKS)
+    foreach my $block (1 .. $newman_blocks)
        {my $even_block = $block % 2 == 0;
         $o->okay_page(mk_newman_key('instructions', $block),
-            p sprintf 'In the next block of 3 trials, %s.',
+            p sprintf 'In the next block of %s trials, %s.', $trials_per_newman_block,
                 $condition eq 'control'
               ? $a_or_b
               : $condition eq 'within_pattern'
@@ -167,8 +243,8 @@ sub newman_task
                 ? q[you'll have to choose B]
                 : $a_or_b
               : die "Unknown \$condition: $condition");
-        foreach my $trial (1 .. TRIALS_PER_NEWMAN_BLOCK)
-           {newman_trial $block, $trial, block_appearance($block),
+        foreach my $trial (1 .. $trials_per_newman_block)
+           {newman_trial $block, $trial, $block % 2 ? 'newman-block-odd' : 'newman-block-even',
               # What choice is the subject forced to make, if any?
                 $condition eq 'control'
               ? 'always_either'
@@ -256,7 +332,7 @@ __DATA__
        {text-align: left;
         vertical-align: middle;}
 
-    #newman-div
+    .newman-div
        {padding: 2em;
         border-width: 3mm;
         margin-bottom: 2em;
@@ -271,7 +347,8 @@ __DATA__
     #newman-fields .multiple_choice_box
        {width: 100%;
         margin-left: 0;
-        margin-right: 0;}
+        margin-right: 0;
+        text-align: center;}
     #newman-fields .row
        {width: 50%;
         display: table-cell;}
