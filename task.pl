@@ -111,7 +111,7 @@ sub newman_trial
               ? 'must choose A'
               : $must_choose eq 'D'
               ? 'must choose B'
-              : 'may choose either of A or B'),
+              : 'may choose either A or B'),
 
         PAGE => {
             fields_wrapper => '<div id="newman-fields">%s</div>',
@@ -148,7 +148,7 @@ sub newman_task
    {my $condition = shift;
 
     #$o->okay_page('newman_task_instructions', p 'something something');
-    my $a_or_b = 'you may choose either of A or B';
+    my $a_or_b = 'you may choose either A or B';
 
     foreach my $block (1 .. NEWMAN_BLOCKS)
        {my $even_block = $block % 2 == 0;
