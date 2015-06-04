@@ -8,7 +8,7 @@ use strict;
 use Carp::Always;
 
 use List::Util 'max';
-use Tversky 'cat';
+use Tversky 'cat', 'DISABLED';
 
 # ------------------------------------------------
 # Parameters
@@ -126,9 +126,11 @@ sub newman_trial
                   :                       '[ID]';
                 /\A$re \d+\z/ ? $_ : undef}},
 
-        ['I', 'A'] => sprintf('<span id="newman-desc-I">%s</span>',
+        ['I', 'A', $must_choose eq 'D' ? DISABLED : 0] => sprintf('<span id="newman-desc-I"%s>%s</span>',
+            $must_choose eq 'D' ? ' class="newman-desc-forbidden"' : '',
             describe_newman_option 'I'),
-        ['D', 'B'] => sprintf('<span id="newman-desc-D">%s</span>',
+        ['D', '[Not available yet]', DISABLED] => sprintf('<span id="newman-desc-D"%s>%s</span>',
+            $must_choose eq 'I' ? ' class="newman-desc-forbidden"' : '',
             describe_newman_option 'D'));
 
     my $choice = get_newman_choice $block, $trial;
@@ -143,6 +145,8 @@ sub newman_trial
         newman_div(($won ? p 'WIN!' : '') . p(sprintf '%d cents', $won
           ? $newman_options{$choice}{amount}
           : 0)),
+        button_text => $iti ? '[Wait for next trial]' : 'Next',
+        disabled => $iti,
         fields_wrapper => "<div id='newman-outcome' class='newman-iti-${iti}ms'>%s</div>");}
 
 my $newman_example = sprintf(

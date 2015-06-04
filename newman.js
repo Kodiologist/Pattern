@@ -29,18 +29,6 @@ if (header)
     var button_i = $('multiple_choice.I');
     var button_d = $('multiple_choice.D');
 
-    // D starts out unavailable.
-    button_d.disabled = true;
-    button_d.textContent = '[Not available yet]';
-
-    // If must_choose is D or I, forbid the other.
-    if (must_choose === 'I')
-       {button_d.disabled = true;
-        $('newman-desc-D').className += ' newman-desc-forbidden';}
-    else if (must_choose === 'D')
-       {button_i.disabled = true;
-        $('newman-desc-I').className += ' newman-desc-forbidden';}
-
     var start_time = (new Date()).getTime();
 
     // Make D available after the dwait timeout.
@@ -65,17 +53,14 @@ var outcome_div = $('newman-outcome');
 if (outcome_div)
   // This page is an outcome page for the Newman task.
 
-   {// If there's an ITI, disable the button until it's over.
+   {// If there's an ITI, enable the button once it's over.
 
     var iti = parseInt(/^newman-iti-(\d+)ms/.exec(outcome_div.className)[1], 10);
-    if (iti)
-       {var button = document.getElementsByTagName('button')[0];
-        var old_textContent = button.textContent;
-        button.disabled = true;
-        button.textContent = '[Wait for next trial]';
-        timeout(iti, function()
+    var button = document.getElementsByTagName('button')[0];
+    if (button.disabled)
+       {timeout(iti, function()
            {button.disabled = false;
-            button.textContent = old_textContent;});}
+            button.textContent = 'Next';});}
 
     return;}
 
