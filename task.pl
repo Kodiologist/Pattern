@@ -295,7 +295,13 @@ $o->run(sub
         p 'Which of the following best describes your knowledge of English?',
         Native => 'I am a native speaker of English.',
         Fluent => 'I am <em>not</em> a native speaker of English, but I consider myself fluent.',
-        Neither => 'I am not fluent in English.');});
+        Neither => 'I am not fluent in English.');
+
+    $o->text_entry_page('comments',
+        p q{<strong>Optional:</strong> Comments on this study.},
+        multiline => 1,
+        accept_blank => 1,
+        max_chars => 5000);});
 
 __DATA__
 
