@@ -4,6 +4,20 @@ window.onload = function() {
 
 var $ = function(x) {return document.getElementById(x)};
 
+var timeout_frontend = 300;
+var timeout = function(duration, callback)
+// Call the callback after at least 'duration' seconds.
+// http://www.sitepoint.com/creating-accurate-timers-in-javascript
+//   {window.setTimeout(callback, duration);}
+   {var f = function()
+       {var elapsed = (new Date()).getTime() - start;
+        if (elapsed < duration)
+            window.setTimeout(f, Math.max(0, duration - elapsed));
+        else
+            callback();}
+    var start = (new Date()).getTime();
+    window.setTimeout(f, Math.max(0, duration - timeout_frontend));};
+
 var header = $('newman-header');
 if (header)
  // This page is a choice page for the Newman task.
@@ -27,12 +41,13 @@ if (header)
        {button_i.disabled = true;
         $('newman-desc-I').className += ' newman-desc-forbidden';}
 
+    var start_time = (new Date()).getTime();
+
     // Make D available after the dwait timeout.
-    var after_dwait_f = function()
+    timeout(dwait, function()
        {if (must_choose !== 'I')
             button_d.disabled = false;
-        button_d.textContent = 'B';};
-    window.setTimeout(after_dwait_f, dwait);
+        button_d.textContent = 'B';});
 
     // When the subject submits the form, include the response time.
     var start_time = (new Date()).getTime();
@@ -58,10 +73,9 @@ if (outcome_div)
         var old_textContent = button.textContent;
         button.disabled = true;
         button.textContent = '[Wait for next trial]';
-        var after_iti_f = function()
-            {button.disabled = false;
-             button.textContent = old_textContent;}
-        window.setTimeout(after_iti_f, iti);}
+        timeout(iti, function()
+           {button.disabled = false;
+            button.textContent = old_textContent;});}
 
     return;}
 
