@@ -14,7 +14,7 @@ use Tversky 'cat';
 # Parameters
 # ------------------------------------------------
 
-my $newman_blocks = 14;
+my $newman_blocks = 20;
 my $trials_per_newman_block = 3;
   # The instructions implicitly assume that
   # $trials_per_newman_block is 3.
