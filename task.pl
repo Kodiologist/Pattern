@@ -277,6 +277,20 @@ $o = new Tversky
     consent_path => $p{consent_path},
     task => $p{task},
 
+    preview => sub
+       {print q{
+        <noscript>
+        <p style="font-size: large; color: black; background-color: #ff5; padding: 1em;">
+        <strong>
+        Your browser doesn't support JavaScript, so this HIT won't work. Please return the HIT.
+        </strong>
+        </p>
+        </noscript>
+
+        <p>
+        (No preview available.)
+        </p>}},
+
     head => do {local $/; <DATA>},
     footer => "\n\n\n</body></html>\n",
 
