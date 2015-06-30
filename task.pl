@@ -136,15 +136,13 @@ sub newman_trial
     my $choice = get_newman_choice $block, $trial;
     my $won = $o->save_once(k 'won', sub
        {rand() <= $newman_options{$choice}{prob}
-          ? 1
-          : ''});
+          ? $newman_options{$choice}{amount}
+          : 0});
     # If the subject chose I, enforce an inter-trial interval
     # $iti of the same duration they would've waited for D.
     my $iti = max 0, $dwait - get_newman_rt $block, $trial;
     $o->okay_page(k 'outcome_page',
-        newman_div(($won ? p 'WIN!' : '') . p(sprintf '%d cents', $won
-          ? $newman_options{$choice}{amount}
-          : 0)),
+        newman_div(($won > 0 ? p 'WIN!' : '') . p "$won cents"),
         button_text => $iti ? '[Wait for next trial]' : 'Next',
         disabled => $iti,
         fields_wrapper => "<div id='newman-outcome' class='newman-iti-${iti}ms'>%s</div>");}
