@@ -297,10 +297,8 @@ $o = new Tversky
 
 $o->run(sub
 
-   {#newman_task 'control';
-    #newman_task 'across_force_d';
-    #newman_task 'within_pattern';
-    newman_task 'across_pattern';
+   {newman_task $o->save_once('newman.forcing_condition', sub {'control'});
+      # $o->get_condition('newman.forcing_condition');
 
     $o->buttons_page('gender',
         p 'Are you male or female?',
