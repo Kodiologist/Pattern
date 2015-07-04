@@ -8,6 +8,12 @@ Your browser doesn't support JavaScript, so this HIT won't work. Please return t
 </p>
 </noscript>
 
+<p style="border: thin solid black; padding: 1em;">
+<strong style="color: red">
+Warning: The time limit is short.
+</strong>
+You won't have to rush, but you will need to start this HIT immediately after accepting it in order to complete it before running out of time.</p>
+
 <div style="text-align: center; color: black; background-color: white;">
 <img src="http://i.imgur.com/jMrHOvc.png" alt="Stony Brook University shield logo">
 <p style="font-weight: bold">Stony Brook<br><span style="color: #c41230">Research</span>
