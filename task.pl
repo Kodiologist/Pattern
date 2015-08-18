@@ -166,7 +166,7 @@ sub newman_task_instructions
         pl q{Here's what the gambles look like:},
         $newman_example,
         pl q{The colored bars are just graphical representations of the chance of winning.},
-        pl q{Notice that B has both a higher chance of paying out and a bigger payout. However, B isn't immediately available at the beginning of each trial. It will show as "[Not available yet]". You'll have to wait a random, unpredicatable amount of time (sometimes short, sometimes long) for B to become available.},
+        pl q{Notice that B has both a higher chance of paying out and a bigger payout. However, B isn't immediately available at the beginning of each trial. It will show as "[Not available yet]". You'll have to wait a random, unpredictable amount of time (sometimes short, sometimes long) for B to become available.},
         pl q{Choosing A will allow you to receive an outcome (either winning or not winning) without waiting, because A is available from the start of each trial. But choosing A won't let you complete the HIT any faster, because the time you <strong>would have</strong> waited for B, had you waited for it, will be added to the time you have to wait to get to the next trial (or to the end of the HIT). Any time you spend waiting before choosing A (although you don't <strong>need</strong> to wait before choosing A, as you do for B) will be credited towards reducing this wait.});
 
     # The quiz
