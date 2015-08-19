@@ -159,15 +159,15 @@ sub newman_task_instructions
     $o->okay_page('newman.warnings', cat
         pl 'Some quick notes before we begin:',
         sprintf '<ul>%s</ul>', cat map {"<li>$_</li>"}
-            q{Please give the experiment your undivided attention. You'll have enough time to complete the HIT if you don't multitask or walk away mid-experiment.},
+            q{Please give the experiment your undivided attention. Doing something else (like checking your phone) during a waiting period would interfere with the purpose of the experiment.},
             q{This experiment uses timers to make you wait for certain things. Don't use your browser's back button or refresh button on a page with a timer, or the timer may restart (in which case it will have the same length as before).});
     $o->okay_page('newman.general_instructions', cat
-        pl q{In this HIT, you'll complete a number of trials which will allow you to choose between two gambles, A or B. Money you win from the gambles will be given to you after the HIT as a bonus. You can't lose money from gambles. Right after you choose each gamble, I'll tell you whether or not you won the gamble.},
+        pl q{In this study, you'll complete a number of trials which will allow you to choose between two gambles, A or B. You can win real money from the gambles, which will be paid to you at the end of the study. You can't lose money from gambles. Right after you choose each gamble, I'll tell you whether or not you won the gamble.},
         pl q{Here's what the gambles look like:},
         $newman_example,
         pl q{The colored bars are just graphical representations of the chance of winning.},
         pl q{Notice that B has both a higher chance of paying out and a bigger payout. However, B isn't immediately available at the beginning of each trial. It will show as "[Not available yet]". You'll have to wait a random, unpredictable amount of time (sometimes short, sometimes long) for B to become available.},
-        pl q{Choosing A will allow you to receive an outcome (either winning or not winning) without waiting, because A is available from the start of each trial. But choosing A won't let you complete the HIT any faster, because the time you <strong>would have</strong> waited for B, had you waited for it, will be added to the time you have to wait to get to the next trial (or to the end of the HIT). Any time you spend waiting before choosing A (although you don't <strong>need</strong> to wait before choosing A, as you do for B) will be credited towards reducing this wait.});
+        pl q{Choosing A will allow you to receive an outcome (either winning or not winning) without waiting, because A is available from the start of each trial. But choosing A won't let you complete the study any faster, because the time you <strong>would have</strong> waited for B, had you waited for it, will be added to the time you have to wait to get to the next trial (or to the end of the study). Any time you spend waiting before choosing A (although you don't <strong>need</strong> to wait before choosing A, as you do for B) will be credited towards reducing this wait.});
 
     # The quiz
     foreach (
@@ -186,7 +186,7 @@ sub newman_task_instructions
                 choices => ['A', 'B', 'Either A or B'],
                 correct => 'A'},
             {k => 'faster_completion',
-                body => p q{Which option will allow you to complete the HIT faster?},
+                body => p q{Which option will allow you to complete the study faster?},
                 choices => ['A', 'B', q{Neither; it makes no difference}],
                 correct => q{Neither; it makes no difference}})
        {my %h = %$_;
@@ -293,29 +293,15 @@ $o = new Tversky
     footer => "\n\n\n</body></html>\n",
 
     mturk => $p{mturk},
-    assume_consent => $p{assume_consent});
+    assume_consent => $p{assume_consent},
+    password_hash => $p{password_hash},
+    password_salt => $p{password_salt});
 
 $o->run(sub
 
    {newman_task $o->save_once('newman.forcing_condition', sub {'control'});
       # $o->get_condition('newman.forcing_condition');
-
-    $o->buttons_page('gender',
-        p 'Are you male or female?',
-        'Male', 'Female');
-    $o->nonneg_int_entry_page('age',
-        p 'How old are you?');
-    $o->multiple_choice_page('english',
-        p 'Which of the following best describes your knowledge of English?',
-        Native => 'I am a native speaker of English.',
-        Fluent => 'I am <em>not</em> a native speaker of English, but I consider myself fluent.',
-        Neither => 'I am not fluent in English.');
-
-    $o->text_entry_page('comments',
-        p q{<strong>Optional:</strong> Comments on this study.},
-        multiline => 1,
-        accept_blank => 1,
-        max_chars => 5000);});
+   });
 
 __DATA__
 
