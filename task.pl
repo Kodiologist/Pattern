@@ -50,6 +50,8 @@ sub in
   $item eq $_ and return 1 foreach @_;
   return 0;}
 
+my $total_cents_won = 0;
+
 # ------------------------------------------------
 # Tasks
 # ------------------------------------------------
@@ -138,6 +140,7 @@ sub newman_trial
        {rand() <= $newman_options{$choice}{prob}
           ? $newman_options{$choice}{amount}
           : 0});
+    $total_cents_won += $won;
     # If the subject chose I, enforce an inter-trial interval
     # $iti of the same duration they would've waited for D.
     my $iti = max 0, $dwait - get_newman_rt $block, $trial;
@@ -301,7 +304,10 @@ $o->run(sub
 
    {newman_task $o->save_once('newman.forcing_condition', sub {'control'});
       # $o->get_condition('newman.forcing_condition');
-   });
+
+    $o->okay_page('total_newman_winnings_page', cat
+        p sprintf('You won $%.2f in total.', $total_cents_won/100),
+        p 'Show this page to the experimenter to claim your winnings. Then, click the button below to finish the task.');});
 
 __DATA__
 
