@@ -307,7 +307,8 @@ $o->run(sub
 
     $o->okay_page('total_newman_winnings_page', cat
         p sprintf('You won $%.2f in total.', $total_cents_won/100),
-        p 'Show this page to the experimenter to claim your winnings. Then, click the button below to finish the task.');});
+        p 'Show this page to the experimenter to claim your winnings. Then, click the button below to finish the task.',
+        p '<strong>Do not click the button until the experimenter has seen how much to pay you.</strong>');});
 
 __DATA__
 
