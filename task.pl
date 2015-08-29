@@ -20,8 +20,8 @@ my $trials_per_newman_block = 3;
   # $trials_per_newman_block is 3.
 
 my %newman_options =
-  (I => {prob => .5, amount => 4},
-   D => {prob => .7, amount => 6});
+  (I => {prob => .6, amount => 4},
+   D => {prob => .7, amount => 4});
 
 # Waits are in milliseconds.
 my $fixed_dwait = 5_000;
@@ -169,7 +169,7 @@ sub newman_task_instructions
         pl q{Here's what the gambles look like:},
         $newman_example,
         pl q{The colored bars are just graphical representations of the chance of winning.},
-        pl q{Notice that B has both a higher chance of paying out and a bigger payout. However, B isn't immediately available at the beginning of each trial. It will show as "[Not available yet]". You'll have to wait a random, unpredictable amount of time (sometimes short, sometimes long) for B to become available.},
+        pl q{Notice that B has a higher chance of paying out. However, B isn't immediately available at the beginning of each trial. It will show as "[Not available yet]". You'll have to wait a random, unpredictable amount of time (sometimes short, sometimes long) for B to become available.},
         pl q{Choosing A will allow you to receive an outcome (either winning or not winning) without waiting, because A is available from the start of each trial. But choosing A won't let you complete the study any faster, because the time you <strong>would have</strong> waited for B, had you waited for it, will be added to the time you have to wait to get to the next trial (or to the end of the study). Any time you spend waiting before choosing A (although you don't <strong>need</strong> to wait before choosing A, as you do for B) will be credited towards reducing this wait.});
 
     # The quiz
@@ -179,7 +179,7 @@ sub newman_task_instructions
                     p q{Let's test your understanding.},
                     p 'Which option has the bigger payout?'),
                 choices => ['A', 'B', 'They have the same payout'],
-                correct => 'B'},
+                correct => 'They have the same payout'},
             {k => 'better_prob',
                 body => p q{Compared to B, A's chance of paying out is},
                 choices => ['lower', 'higher', 'the same'],
