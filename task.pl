@@ -177,7 +177,7 @@ sub newman_task_instructions
             {k => 'better_amount',
                 body => cat(
                     p q{Let's test your understanding.},
-                    p 'Which option has the bigger payout?'),
+                    p 'Which option pays out more money, when it pays out?'),
                 choices => ['A', 'B', 'They have the same payout'],
                 correct => 'They have the same payout'},
             {k => 'better_prob',
