@@ -302,8 +302,7 @@ $o = new Tversky
 
 $o->run(sub
 
-   {newman_task $o->save_once('newman.forcing_condition', sub {'control'});
-      # $o->get_condition('newman.forcing_condition');
+   {newman_task $o->get_condition('newman.forcing_condition');
 
     $o->okay_page('total_newman_winnings_page', cat
         p sprintf('You won $%.2f in total.', $total_cents_won/100),
