@@ -174,16 +174,16 @@ sub newman_task_instructions
 
     # The quiz
     foreach (
-            {k => 'better_amount',
+            {k => 'better_prob',
                 body => cat(
                     p q{Let's test your understanding.},
-                    p 'Which option pays out more money, when it pays out?'),
-                choices => ['A', 'B', 'They have the same payout'],
-                correct => 'They have the same payout'},
-            {k => 'better_prob',
-                body => p q{Compared to B, A's chance of paying out is},
+                    p q{Compared to B, A's chance of paying out is}),
                 choices => ['lower', 'higher', 'the same'],
                 correct => 'lower'},
+            {k => 'better_amount',
+                body => p q{Which gamble gives you more money when you win the gamble?},
+                choices => ['A', 'B', 'They give the same amount of money'],
+                correct => 'They give the same amount of money'},
             {k => 'immediate',
                 body => p q{Which option can you choose as soon as a trial starts?},
                 choices => ['A', 'B', 'Either A or B'],
