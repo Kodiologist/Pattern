@@ -156,9 +156,7 @@ my $newman_example = sprintf(
     sprintf('<div class="row"><p>B</p>%s</div>', describe_newman_option 'D'));
 
 sub newman_task_instructions
-   {my $condition = shift;
-
-    # General instructions for the Newman task.
+   {# General instructions for the Newman task.
     $o->okay_page('newman.warnings', cat
         pl 'Some quick notes before we begin:',
         sprintf '<ul>%s</ul>', cat map {"<li>$_</li>"}
@@ -203,6 +201,7 @@ sub newman_task_instructions
               : "Nope, the correct answer was: <strong>$h{correct}</strong>."));}
 
     # Condition-specific instructions.
+    my $condition = $o->get_condition('newman.forcing_condition');
     $o->okay_page('newman.block_types', cat
        pl 'Okay, one more thing before we begin.',
        pl qq{You'll complete trials in blocks of $trials_per_newman_block.},
@@ -225,10 +224,9 @@ sub newman_task_instructions
           pl q{You'll see a quick reminder of the rules before each block.});}
 
 sub newman_task
-   {my $condition = shift;
+   {newman_task_instructions;
 
-    newman_task_instructions $condition;
-
+    my $condition = $o->get_condition('newman.forcing_condition');
     my $a_or_b = 'you may choose either A or B';
 
     foreach my $block (1 .. $newman_blocks)
@@ -302,7 +300,7 @@ $o = new Tversky
 
 $o->run(sub
 
-   {newman_task $o->get_condition('newman.forcing_condition');
+   {newman_task;
 
     $o->okay_page('total_newman_winnings_page', cat
         p sprintf('You won $%.2f in total.', $total_cents_won/100),
