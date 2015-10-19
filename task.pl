@@ -163,7 +163,7 @@ sub newman_task_instructions
             q{Please give the experiment your undivided attention. Doing something else (like checking your phone) during a waiting period would interfere with the purpose of the experiment.},
             q{This experiment uses timers to make you wait for certain things. Don't use your browser's back button or refresh button on a page with a timer, or the timer may restart (in which case it will have the same length as before).});
     $o->okay_page('newman.general_instructions', cat
-        pl q{In this study, you'll complete a number of trials which will allow you to choose between two gambles, A or B. You can win real money from the gambles, which will be paid to you at the end of the study. You can't lose money from gambles. Right after you choose each gamble, I'll tell you whether or not you won the gamble.},
+        pl q{In this study, you'll complete a number of trials which will allow you to choose between two gambles, A or B. You can win (imaginary) money from the gambles. You can't lose money from gambles. Right after you choose each gamble, I'll tell you whether or not you won the gamble. At the end of the study, I'll tell you your total winnings. Although no real money will be involved in this study, please try to make your decisions as if the gambles were for real money.},
         pl q{Here's what the gambles look like:},
         $newman_example,
         pl q{The colored bars are just graphical representations of the chance of winning.},
@@ -303,9 +303,7 @@ $o->run(sub
    {newman_task;
 
     $o->okay_page('total_newman_winnings_page', cat
-        p sprintf('You won $%.2f in total.', $total_cents_won/100),
-        p 'Show this page to the experimenter to claim your winnings. Then, click the button below to finish the task.',
-        p '<strong>Do not click the button until the experimenter has seen how much to pay you.</strong>');});
+        p sprintf('You won $%.2f in total.', $total_cents_won/100));});
 
 __DATA__
 
